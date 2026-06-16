@@ -7,6 +7,7 @@
       "dependencies": {
         "@mantine/core": "^9.3.1",
         "@mantine/hooks": "^9.3.1",
+        "@narthia/jira-client": "^0.4.0",
         "next": "16.2.9",
         "react": "19.2.4",
         "react-dom": "19.2.4",
@@ -194,6 +195,8 @@
     "@mantine/core": ["@mantine/core@9.3.1", "", { "dependencies": { "@floating-ui/react": "^0.27.19", "clsx": "^2.1.1", "react-number-format": "^5.4.5", "react-remove-scroll": "^2.7.2", "type-fest": "^5.6.0" }, "peerDependencies": { "@mantine/hooks": "9.3.1", "react": "^19.2.0", "react-dom": "^19.2.0" } }, "sha512-4rBoHpggSohayE+Os7lKdbsHTw7m/uZRKYjk9DN6cKBhQIjdiULdcG+b4b5CMVZSqZDHPgT70uWGI7yqkn8Ufw=="],
 
     "@mantine/hooks": ["@mantine/hooks@9.3.1", "", { "peerDependencies": { "react": "^19.2.0" } }, "sha512-zAOlxV59j5CDgAnExN+ypaR6dVW1vwMKDvKUxIlUVd/e52qxYnPyYRD+shJmyOLaZRuQmVF0R/7mJAjt2jw9cA=="],
+
+    "@narthia/jira-client": ["@narthia/jira-client@0.4.0", "", {}, "sha512-D0Ifapy7lMD7TG3V0KUmhB6BARrTqrjtsIcJYoorGWjKrfrN+cV9h/pUG2J6fjsFSge9zZNU9cqfzeo7wzzvfA=="],
 
     "@next/env": ["@next/env@16.2.9", "", {}, "sha512-ki5VxxXfzD/9TDe13wyeTKIjQTAwBVpnr8KhRDUr8ltMUq1/NBpWNT5tiPoxiGl+PHM4X2ahSOiPk6iAimIzPg=="],
 
