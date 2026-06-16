@@ -1,20 +1,27 @@
 "use client";
 
-import { ActionIcon, useComputedColorScheme, useMantineColorScheme } from "@mantine/core";
+import { ActionIcon, Box, useMantineColorScheme } from "@mantine/core";
 import { IconMoon, IconSun } from "@tabler/icons-react";
 
 export function ColorSchemeToggle() {
-  const { setColorScheme } = useMantineColorScheme();
-  const computed = useComputedColorScheme("light", { getInitialValueInEffect: true });
+  const { toggleColorScheme } = useMantineColorScheme();
 
+  // Render both icons and let Mantine hide one via CSS (data attributes) so the
+  // server and client markup match — branching on the computed scheme during
+  // render causes a hydration mismatch.
   return (
     <ActionIcon
       variant="default"
       size="lg"
       aria-label="Toggle color scheme"
-      onClick={() => setColorScheme(computed === "dark" ? "light" : "dark")}
+      onClick={toggleColorScheme}
     >
-      {computed === "dark" ? <IconSun size={18} /> : <IconMoon size={18} />}
+      <Box darkHidden>
+        <IconMoon size={18} />
+      </Box>
+      <Box lightHidden>
+        <IconSun size={18} />
+      </Box>
     </ActionIcon>
   );
 }
