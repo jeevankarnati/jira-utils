@@ -4,7 +4,6 @@ import {
   Alert,
   Button,
   Checkbox,
-  Container,
   Group,
   List,
   Modal,
@@ -68,17 +67,22 @@ export default function ResetJiraInstancePage() {
   };
 
   return (
-    <Container size="sm" py="xl">
+    <div>
       <Stack gap="lg">
-        <Title order={2}>Reset Jira Instance</Title>
-        <Text size="sm" c="dimmed">
-          Enter your Jira credentials and choose what to delete. Nothing is stored — credentials are
-          only used for this request.
-        </Text>
+        <div>
+          <Title order={2}>Reset Jira Instance</Title>
+          <Text size="sm" c="dimmed">
+            Enter your Jira credentials and choose what to delete.
+          </Text>
+          <Text size="sm" c="dimmed">
+            Nothing is stored - credentials are only used for this request.
+          </Text>
+        </div>
 
         <TextInput
           label="Email"
           placeholder="you@example.com"
+          w="30%"
           value={email}
           onChange={(e) => setEmail(e.currentTarget.value)}
           required
@@ -86,6 +90,7 @@ export default function ResetJiraInstancePage() {
         <TextInput
           label="Instance URL"
           placeholder="https://your-domain.atlassian.net"
+          w="30%"
           value={baseUrl}
           onChange={(e) => setBaseUrl(e.currentTarget.value)}
           required
@@ -93,6 +98,7 @@ export default function ResetJiraInstancePage() {
         <PasswordInput
           label="API Token"
           placeholder="Your Jira API token"
+          w="30%"
           value={apiToken}
           onChange={(e) => setApiToken(e.currentTarget.value)}
           required
@@ -173,6 +179,6 @@ export default function ResetJiraInstancePage() {
           </Group>
         </Stack>
       </Modal>
-    </Container>
+    </div>
   );
 }

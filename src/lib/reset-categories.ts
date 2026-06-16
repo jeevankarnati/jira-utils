@@ -13,11 +13,11 @@ export const RESET_CATEGORIES = [
   { key: "screenSchemes", label: "Screen Schemes" },
   { key: "screens", label: "Screens" },
   { key: "customFields", label: "Custom Fields" },
-  { key: "statuses", label: "Statuses" },
-  { key: "issueTypes", label: "Issue Types" },
-  { key: "fieldConfigurationSchemes", label: "Field Configuration Schemes" },
-  { key: "fieldConfigurations", label: "Field Configurations" },
-  { key: "issueResolutions", label: "Issue Resolutions" },
+  // { key: "statuses", label: "Statuses" },
+  // { key: "issueTypes", label: "Issue Types" },
+  // { key: "fieldConfigurationSchemes", label: "Field Configuration Schemes" },
+  // { key: "fieldConfigurations", label: "Field Configurations" },
+  // { key: "issueResolutions", label: "Issue Resolutions" },
 ] as const;
 
 export type ResetCategoryKey = (typeof RESET_CATEGORIES)[number]["key"];

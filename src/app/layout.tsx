@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { ColorSchemeScript, MantineProvider, mantineHtmlProps } from "@mantine/core";
 import { Geist, Geist_Mono } from "next/font/google";
-import { Navbar } from "@/components/navbar";
+import { Shell } from "@/components/app-shell";
 import "@mantine/core/styles.css";
 import "./globals.css";
 
@@ -32,12 +32,11 @@ export default function RootLayout({
       {...mantineHtmlProps}
     >
       <head>
-        <ColorSchemeScript />
+        <ColorSchemeScript defaultColorScheme="auto" />
       </head>
       <body className="flex min-h-full flex-col">
-        <MantineProvider>
-          <Navbar />
-          {children}
+        <MantineProvider defaultColorScheme="auto">
+          <Shell>{children}</Shell>
         </MantineProvider>
       </body>
     </html>

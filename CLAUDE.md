@@ -18,7 +18,7 @@ Manual memoisation should only be added in the rare cases where the compiler emi
 After completing any task, always run:
 
 ```bash
-bun run quality
+bun run quality && bun run quality:fix
 ```
 
 This runs lint and format checks. Fix any issues before considering the task done.
