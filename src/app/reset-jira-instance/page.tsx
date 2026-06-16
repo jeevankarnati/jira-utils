@@ -156,6 +156,9 @@ export default function ResetJiraInstancePage() {
           if (line) applyEvent(JSON.parse(line) as ResetEvent);
         }
       }
+
+      // Everything finished - collapse all categories so the summary is clean.
+      setOpenPanels([]);
     } catch (err) {
       setError(err instanceof Error ? err.message : String(err));
     } finally {
@@ -165,6 +168,12 @@ export default function ResetJiraInstancePage() {
 
   const selectAll = () => setSelected(RESET_CATEGORIES.map((c) => c.key));
   const clearAll = () => setSelected([]);
+
+  const clearProgress = () => {
+    setProgress(null);
+    setOpenPanels([]);
+    setError(null);
+  };
 
   return (
     <div className="flex flex-col gap-6 md:h-[calc(100dvh-56px-2rem)] md:overflow-hidden">
@@ -271,6 +280,7 @@ export default function ResetJiraInstancePage() {
                 openPanels={openPanels}
                 onOpenChange={setOpenPanels}
                 running={loading}
+                onClear={clearProgress}
               />
             ) : (
               <EmptyState />
@@ -320,8 +330,10 @@ function EmptyState() {
         <div className="flex size-14 items-center justify-center rounded-full bg-default text-muted">
           <IconListCheck size={28} />
         </div>
-        <Typography weight="semibold">No reset running yet</Typography>
-        <Typography type="body-sm" color="muted">
+        <Typography weight="semibold" align="center">
+          No reset running yet
+        </Typography>
+        <Typography type="body-sm" color="muted" align="center">
           Select what to delete and start a reset. Live progress and per-item results will appear
           here.
         </Typography>
@@ -336,6 +348,7 @@ interface ProgressPanelProps {
   openPanels: string[];
   onOpenChange: (value: string[]) => void;
   running: boolean;
+  onClear: () => void;
 }
 
 function ProgressPanel({
@@ -344,14 +357,18 @@ function ProgressPanel({
   openPanels,
   onOpenChange,
   running,
+  onClear,
 }: ProgressPanelProps) {
   const runningKey = ordered.find(({ key }) => progress[key]?.status === "running")?.key ?? null;
   const runningRef = useRef<HTMLDivElement>(null);
+  // Re-scroll as the active category grows, not just when it changes - the last
+  // category has no content below it, so "start" alignment can't pull it up.
+  const runningCount = runningKey ? (progress[runningKey]?.items.length ?? 0) : 0;
 
-  // Bring the category currently being processed into view as the run advances.
+  // Keep the category currently being processed in view as the run advances.
   useEffect(() => {
-    runningRef.current?.scrollIntoView({ behavior: "smooth", block: "nearest" });
-  }, [runningKey]);
+    runningRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
+  }, [runningKey, runningCount]);
 
   const totals = ordered.reduce(
     (acc, { key }) => {
@@ -381,6 +398,9 @@ function ProgressPanel({
               {totals.failed} failed
             </Chip>
           )}
+          <Button variant="ghost" size="sm" onPress={onClear} isDisabled={running}>
+            Clear
+          </Button>
         </div>
       </div>
 
