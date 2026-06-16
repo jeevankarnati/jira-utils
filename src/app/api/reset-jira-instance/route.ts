@@ -1,6 +1,7 @@
 import { JiraClient } from "@narthia/jira-client";
+import type { ResetEvent } from "@/lib/reset-events";
 import { RESET_CATEGORIES, type ResetCategoryKey } from "@/lib/reset-categories";
-import { RESET_FUNCTIONS, type ResetResult } from "@/server/jira";
+import { RESET_FUNCTIONS } from "@/server/jira";
 
 interface ResetRequestBody {
   email?: string;
@@ -33,21 +34,46 @@ export async function POST(req: Request) {
     auth: { email, apiToken, baseUrl },
   });
 
-  const results: Record<string, ResetResult> = {};
-
-  // Iterate in the canonical dependency order, running only selected categories.
-  for (const { key } of RESET_CATEGORIES) {
-    if (!selected.has(key)) continue;
-    try {
-      results[key] = await RESET_FUNCTIONS[key as ResetCategoryKey](jiraClient);
-    } catch (err) {
-      results[key] = {
-        deleted: 0,
-        failed: 0,
-        error: err instanceof Error ? err.message : String(err),
+  const encoder = new TextEncoder();
+  const stream = new ReadableStream<Uint8Array>({
+    async start(controller) {
+      const send = (event: ResetEvent) => {
+        controller.enqueue(encoder.encode(`${JSON.stringify(event)}\n`));
       };
-    }
-  }
 
-  return Response.json({ results });
+      // Iterate in the canonical dependency order, running only selected
+      // categories. Each reset function reports progress as it deletes, which
+      // we relay to the client one event at a time.
+      for (const { key } of RESET_CATEGORIES) {
+        if (!selected.has(key)) continue;
+
+        send({ type: "category-start", key });
+        try {
+          const result = await RESET_FUNCTIONS[key as ResetCategoryKey](jiraClient, {
+            discovered: (total) => send({ type: "category-discovered", key, total }),
+            item: (item) => send({ type: "item-result", key, ...item }),
+          });
+          send({ type: "category-done", key, ...result });
+        } catch (err) {
+          send({
+            type: "category-done",
+            key,
+            deleted: 0,
+            failed: 0,
+            error: err instanceof Error ? err.message : String(err),
+          });
+        }
+      }
+
+      send({ type: "done" });
+      controller.close();
+    },
+  });
+
+  return new Response(stream, {
+    headers: {
+      "Content-Type": "application/x-ndjson; charset=utf-8",
+      "Cache-Control": "no-cache, no-transform",
+    },
+  });
 }

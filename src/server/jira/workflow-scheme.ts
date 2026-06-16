@@ -1,8 +1,9 @@
 import type { DefaultJiraClientType } from "@narthia/jira-client";
-import type { ResetResult } from "./types";
+import type { ProgressReporter, ResetResult } from "./types";
 
 export const resetWorkflowSchemes = async (
-  jiraClient: DefaultJiraClientType
+  jiraClient: DefaultJiraClientType,
+  progress: ProgressReporter
 ): Promise<ResetResult> => {
   const maxResults = 100;
 
@@ -39,17 +40,28 @@ export const resetWorkflowSchemes = async (
     }
   }
 
+  progress.discovered(allWorkflowSchemes.length);
+
   let deleted = 0;
   let failed = 0;
 
   for (const workflowScheme of allWorkflowSchemes) {
+    const id = String(workflowScheme.id!);
+    const name = workflowScheme.name ?? id;
     const deleteWorkflowScheme = await jiraClient.workflowSchemes.deleteWorkflowScheme({
       id: workflowScheme.id!,
     });
     if (deleteWorkflowScheme.success) {
       deleted++;
+      progress.item({ id, name, status: "deleted" });
     } else {
       failed++;
+      progress.item({
+        id,
+        name,
+        status: "failed",
+        error: JSON.stringify(deleteWorkflowScheme.error),
+      });
     }
   }
 

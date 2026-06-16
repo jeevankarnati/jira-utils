@@ -6,4 +6,24 @@ export interface ResetResult {
   error?: string;
 }
 
-export type ResetFn = (jiraClient: DefaultJiraClientType) => Promise<ResetResult>;
+export interface ResetItemEvent {
+  id: string;
+  name: string;
+  status: "deleted" | "failed";
+  error?: string;
+}
+
+/**
+ * Lets a reset function report fine-grained progress as it works: how many
+ * items it found, and the outcome of each individual deletion. The route
+ * handler turns these calls into a stream of events for the UI.
+ */
+export interface ProgressReporter {
+  discovered: (total: number) => void;
+  item: (event: ResetItemEvent) => void;
+}
+
+export type ResetFn = (
+  jiraClient: DefaultJiraClientType,
+  progress: ProgressReporter
+) => Promise<ResetResult>;

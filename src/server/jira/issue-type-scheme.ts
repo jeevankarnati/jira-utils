@@ -1,8 +1,9 @@
 import type { DefaultJiraClientType } from "@narthia/jira-client";
-import type { ResetResult } from "./types";
+import type { ProgressReporter, ResetResult } from "./types";
 
 export const resetIssueTypeSchemes = async (
-  jiraClient: DefaultJiraClientType
+  jiraClient: DefaultJiraClientType,
+  progress: ProgressReporter
 ): Promise<ResetResult> => {
   const maxResults = 100;
 
@@ -39,17 +40,28 @@ export const resetIssueTypeSchemes = async (
     }
   }
 
+  progress.discovered(allIssueTypeSchemes.length);
+
   let deleted = 0;
   let failed = 0;
 
   for (const issueTypeScheme of allIssueTypeSchemes) {
+    const id = issueTypeScheme.id!;
+    const name = issueTypeScheme.name ?? id;
     const deleteIssueTypeScheme = await jiraClient.issueTypeSchemes.deleteIssueTypeScheme({
-      issueTypeSchemeId: Number(issueTypeScheme.id!),
+      issueTypeSchemeId: Number(id),
     });
     if (deleteIssueTypeScheme.success) {
       deleted++;
+      progress.item({ id, name, status: "deleted" });
     } else {
       failed++;
+      progress.item({
+        id,
+        name,
+        status: "failed",
+        error: JSON.stringify(deleteIssueTypeScheme.error),
+      });
     }
   }
 

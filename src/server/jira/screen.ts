@@ -1,7 +1,10 @@
 import type { DefaultJiraClientType } from "@narthia/jira-client";
-import type { ResetResult } from "./types";
+import type { ProgressReporter, ResetResult } from "./types";
 
-export const resetScreens = async (jiraClient: DefaultJiraClientType): Promise<ResetResult> => {
+export const resetScreens = async (
+  jiraClient: DefaultJiraClientType,
+  progress: ProgressReporter
+): Promise<ResetResult> => {
   const maxResults = 100;
 
   const firstPage = await jiraClient.screens.getScreens({
@@ -37,17 +40,28 @@ export const resetScreens = async (jiraClient: DefaultJiraClientType): Promise<R
     }
   }
 
+  progress.discovered(allScreens.length);
+
   let deleted = 0;
   let failed = 0;
 
   for (const screen of allScreens) {
+    const id = screen.id!;
+    const name = screen.name ?? String(id);
     const deleteScreen = await jiraClient.screens.deleteScreen({
-      screenId: screen.id!,
+      screenId: id,
     });
     if (deleteScreen.success) {
       deleted++;
+      progress.item({ id: String(id), name, status: "deleted" });
     } else {
       failed++;
+      progress.item({
+        id: String(id),
+        name,
+        status: "failed",
+        error: JSON.stringify(deleteScreen.error),
+      });
     }
   }
 
