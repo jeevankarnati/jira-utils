@@ -16,14 +16,14 @@
     "start": "next start"
   },
   "dependencies": {
-    "@mantine/core": "^9.3.1",
-    "@mantine/hooks": "^9.3.1",
+    "@heroui/react": "^3.2.0",
+    "@heroui/styles": "^3.2.0",
     "@narthia/jira-client": "^0.4.0",
     "@tabler/icons-react": "^3.44.0",
     "next": "16.2.9",
+    "next-themes": "^0.4.6",
     "react": "19.2.4",
-    "react-dom": "19.2.4",
-    "tailwind-preset-mantine": "^4.0.3"
+    "react-dom": "19.2.4"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
@@ -37,8 +37,6 @@
     "oxlint": "^1.70.0",
     "oxlint-tsgolint": "^0.23.0",
     "postcss": "^8.5.15",
-    "postcss-preset-mantine": "^1.18.0",
-    "postcss-simple-vars": "^7.0.1",
     "tailwindcss": "^4",
     "typescript": "^5"
   },

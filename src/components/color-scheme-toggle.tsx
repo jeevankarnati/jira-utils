@@ -1,27 +1,21 @@
 "use client";
 
-import { ActionIcon, Box, useMantineColorScheme } from "@mantine/core";
+import { Button } from "@heroui/react";
 import { IconMoon, IconSun } from "@tabler/icons-react";
+import { useTheme } from "next-themes";
 
 export function ColorSchemeToggle() {
-  const { toggleColorScheme } = useMantineColorScheme();
+  const { resolvedTheme, setTheme } = useTheme();
 
-  // Render both icons and let Mantine hide one via CSS (data attributes) so the
-  // server and client markup match — branching on the computed scheme during
-  // render causes a hydration mismatch.
+  const toggle = () => setTheme(resolvedTheme === "dark" ? "light" : "dark");
+
+  // Render both icons and let CSS (the `dark` class on <html>) decide which is
+  // visible, so the server and client markup match — branching on the resolved
+  // theme during render causes a hydration mismatch.
   return (
-    <ActionIcon
-      variant="default"
-      size="lg"
-      aria-label="Toggle color scheme"
-      onClick={toggleColorScheme}
-    >
-      <Box darkHidden>
-        <IconMoon size={18} />
-      </Box>
-      <Box lightHidden>
-        <IconSun size={18} />
-      </Box>
-    </ActionIcon>
+    <Button isIconOnly variant="ghost" aria-label="Toggle color scheme" onPress={toggle}>
+      <IconMoon size={18} className="dark:hidden" />
+      <IconSun size={18} className="hidden dark:block" />
+    </Button>
   );
 }
