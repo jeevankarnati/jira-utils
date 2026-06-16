@@ -21,7 +21,7 @@ import {
 } from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
 import { IconCheck, IconClock, IconX } from "@tabler/icons-react";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { ResetEvent } from "@/lib/reset-events";
 import { RESET_CATEGORIES, type ResetCategoryKey } from "@/lib/reset-categories";
 
@@ -284,6 +284,14 @@ function ProgressPanel({
   onOpenChange,
   running,
 }: ProgressPanelProps) {
+  const runningKey = ordered.find(({ key }) => progress[key]?.status === "running")?.key ?? null;
+  const runningRef = useRef<HTMLDivElement>(null);
+
+  // Bring the category currently being processed into view as the run advances.
+  useEffect(() => {
+    runningRef.current?.scrollIntoView({ behavior: "smooth", block: "nearest" });
+  }, [runningKey]);
+
   const totals = ordered.reduce(
     (acc, { key }) => {
       const p = progress[key];
@@ -320,7 +328,7 @@ function ProgressPanel({
           const p = progress[key];
           if (!p) return null;
           return (
-            <Accordion.Item key={key} value={key}>
+            <Accordion.Item key={key} value={key} ref={key === runningKey ? runningRef : undefined}>
               <Accordion.Control icon={<StatusIcon p={p} />}>
                 <CategoryHeader label={label} p={p} />
               </Accordion.Control>
@@ -399,6 +407,14 @@ function CategoryHeader({ label, p }: { label: string; p: CategoryProgress }) {
 }
 
 function CategoryDetail({ p }: { p: CategoryProgress }) {
+  const viewportRef = useRef<HTMLDivElement>(null);
+
+  // Keep the latest deleted item in view as the list grows.
+  useEffect(() => {
+    const viewport = viewportRef.current;
+    if (viewport) viewport.scrollTo({ top: viewport.scrollHeight, behavior: "smooth" });
+  }, [p.items.length]);
+
   if (p.error) {
     return (
       <Alert color="red" variant="light" title="Category failed">
@@ -424,7 +440,7 @@ function CategoryDetail({ p }: { p: CategoryProgress }) {
   }
 
   return (
-    <ScrollArea.Autosize mah={260} type="auto">
+    <ScrollArea.Autosize viewportRef={viewportRef} mah={260} type="auto">
       <Stack gap={6}>
         {p.items.map((item, index) => (
           <Group key={`${item.id}-${index}`} gap="xs" wrap="nowrap" align="flex-start">
