@@ -4,8 +4,12 @@ import {
   Accordion,
   Alert,
   Badge,
+  Box,
   Button,
+  Card,
+  Center,
   Checkbox,
+  Flex,
   Group,
   List,
   Loader,
@@ -13,6 +17,7 @@ import {
   PasswordInput,
   Progress,
   ScrollArea,
+  SimpleGrid,
   Stack,
   Text,
   TextInput,
@@ -20,10 +25,11 @@ import {
   Title,
 } from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
-import { IconCheck, IconClock, IconX } from "@tabler/icons-react";
+import { IconCheck, IconClock, IconListCheck, IconX } from "@tabler/icons-react";
 import { useEffect, useRef, useState } from "react";
 import type { ResetEvent } from "@/lib/reset-events";
 import { RESET_CATEGORIES, type ResetCategoryKey } from "@/lib/reset-categories";
+import classes from "./page.module.css";
 
 type CategoryStatus = "queued" | "running" | "done";
 
@@ -168,78 +174,114 @@ export default function ResetJiraInstancePage() {
     }
   };
 
+  const selectAll = () => setSelected(RESET_CATEGORIES.map((c) => c.key));
+  const clearAll = () => setSelected([]);
+
   return (
-    <div>
-      <Stack gap="lg">
-        <div>
-          <Title order={2}>Reset Jira Instance</Title>
-          <Text size="sm" c="dimmed">
-            Enter your Jira credentials and choose what to delete.
-          </Text>
-          <Text size="sm" c="dimmed">
-            Nothing is stored - credentials are only used for this request.
-          </Text>
-        </div>
+    <div className={classes.page}>
+      <div>
+        <Title order={2}>Reset Jira Instance</Title>
+        <Text size="sm" c="dimmed">
+          Enter your Jira credentials and choose what to delete. Nothing is stored - credentials are
+          only used for this request.
+        </Text>
+      </div>
 
-        <TextInput
-          label="Email"
-          placeholder="you@example.com"
-          w="30%"
-          value={email}
-          onChange={(e) => setEmail(e.currentTarget.value)}
-          required
-        />
-        <TextInput
-          label="Instance URL"
-          placeholder="https://your-domain.atlassian.net"
-          w="30%"
-          value={baseUrl}
-          onChange={(e) => setBaseUrl(e.currentTarget.value)}
-          required
-        />
-        <PasswordInput
-          label="API Token"
-          placeholder="Your Jira API token"
-          w="30%"
-          value={apiToken}
-          onChange={(e) => setApiToken(e.currentTarget.value)}
-          required
-        />
+      <Flex className={classes.cols} direction={{ base: "column", md: "row" }} gap="lg">
+        <Box w={{ base: "100%", md: "40%" }} style={{ flexShrink: 0 }}>
+          <Card withBorder radius="md" padding="lg" className={classes.card}>
+            <Box className={classes.cardScroll}>
+              <Stack gap="md">
+                <TextInput
+                  label="Email"
+                  placeholder="you@example.com"
+                  value={email}
+                  onChange={(e) => setEmail(e.currentTarget.value)}
+                  required
+                />
+                <TextInput
+                  label="Instance URL"
+                  placeholder="https://your-domain.atlassian.net"
+                  value={baseUrl}
+                  onChange={(e) => setBaseUrl(e.currentTarget.value)}
+                  required
+                />
+                <PasswordInput
+                  label="API Token"
+                  placeholder="Your Jira API token"
+                  value={apiToken}
+                  onChange={(e) => setApiToken(e.currentTarget.value)}
+                  required
+                />
 
-        <Checkbox.Group
-          label="What to delete"
-          value={selected}
-          onChange={(value) => setSelected(value as ResetCategoryKey[])}
-        >
-          <Stack gap="xs" mt="xs">
-            {RESET_CATEGORIES.map((category) => (
-              <Checkbox key={category.key} value={category.key} label={category.label} />
-            ))}
-          </Stack>
-        </Checkbox.Group>
+                <Checkbox.Group
+                  label={
+                    <Group justify="space-between" wrap="nowrap">
+                      <Text component="span" fw={500} size="sm">
+                        What to delete
+                      </Text>
+                      <Group gap={4}>
+                        <Button variant="subtle" size="compact-xs" onClick={selectAll}>
+                          All
+                        </Button>
+                        <Button
+                          variant="subtle"
+                          size="compact-xs"
+                          color="gray"
+                          onClick={clearAll}
+                          disabled={selected.length === 0}
+                        >
+                          Clear
+                        </Button>
+                      </Group>
+                    </Group>
+                  }
+                  value={selected}
+                  onChange={(value) => setSelected(value as ResetCategoryKey[])}
+                >
+                  <SimpleGrid cols={{ base: 1, xs: 2 }} spacing="xs" mt="xs">
+                    {RESET_CATEGORIES.map((category) => (
+                      <Checkbox key={category.key} value={category.key} label={category.label} />
+                    ))}
+                  </SimpleGrid>
+                </Checkbox.Group>
 
-        <Group>
-          <Button color="red" disabled={!canSubmit} loading={loading} onClick={confirm.open}>
-            Reset selected
-          </Button>
-        </Group>
+                <Button
+                  color="red"
+                  fullWidth
+                  disabled={!canSubmit}
+                  loading={loading}
+                  onClick={confirm.open}
+                >
+                  {selected.length > 0 ? `Reset ${selected.length} selected` : "Reset selected"}
+                </Button>
 
-        {error && (
-          <Alert color="red" title="Error">
-            {error}
-          </Alert>
-        )}
+                {error && (
+                  <Alert color="red" title="Error">
+                    {error}
+                  </Alert>
+                )}
+              </Stack>
+            </Box>
+          </Card>
+        </Box>
 
-        {progress && (
-          <ProgressPanel
-            ordered={orderedSelected}
-            progress={progress}
-            openPanels={openPanels}
-            onOpenChange={setOpenPanels}
-            running={loading}
-          />
-        )}
-      </Stack>
+        <Box flex={1} miw={0}>
+          <Card withBorder radius="md" padding="lg" className={classes.card}>
+            {progress ? (
+              <ProgressPanel
+                ordered={orderedSelected}
+                progress={progress}
+                openPanels={openPanels}
+                onOpenChange={setOpenPanels}
+                running={loading}
+              />
+            ) : (
+              <EmptyState />
+            )}
+          </Card>
+        </Box>
+      </Flex>
 
       <Modal opened={confirmOpened} onClose={confirm.close} title="Confirm deletion" centered>
         <Stack gap="md">
@@ -266,6 +308,23 @@ export default function ResetJiraInstancePage() {
         </Stack>
       </Modal>
     </div>
+  );
+}
+
+function EmptyState() {
+  return (
+    <Center style={{ flex: 1 }} mih={280}>
+      <Stack align="center" gap="sm" maw={320} ta="center">
+        <ThemeIcon color="gray" variant="light" radius="xl" size={56}>
+          <IconListCheck size={28} />
+        </ThemeIcon>
+        <Text fw={600}>No reset running yet</Text>
+        <Text size="sm" c="dimmed">
+          Select what to delete and start a reset. Live progress and per-item results will appear
+          here.
+        </Text>
+      </Stack>
+    </Center>
   );
 }
 
@@ -305,7 +364,7 @@ function ProgressPanel({
   );
 
   return (
-    <Stack gap="sm">
+    <Stack gap="sm" style={{ flex: 1, minHeight: 0 }}>
       <Group justify="space-between">
         <Text fw={600}>{running ? "Deleting…" : "Reset complete"}</Text>
         <Group gap="xs">
@@ -323,22 +382,28 @@ function ProgressPanel({
         </Group>
       </Group>
 
-      <Accordion multiple value={openPanels} onChange={onOpenChange} variant="separated">
-        {ordered.map(({ key, label }) => {
-          const p = progress[key];
-          if (!p) return null;
-          return (
-            <Accordion.Item key={key} value={key} ref={key === runningKey ? runningRef : undefined}>
-              <Accordion.Control icon={<StatusIcon p={p} />}>
-                <CategoryHeader label={label} p={p} />
-              </Accordion.Control>
-              <Accordion.Panel>
-                <CategoryDetail p={p} />
-              </Accordion.Panel>
-            </Accordion.Item>
-          );
-        })}
-      </Accordion>
+      <Box className={classes.cardScroll}>
+        <Accordion multiple value={openPanels} onChange={onOpenChange} variant="separated">
+          {ordered.map(({ key, label }) => {
+            const p = progress[key];
+            if (!p) return null;
+            return (
+              <Accordion.Item
+                key={key}
+                value={key}
+                ref={key === runningKey ? runningRef : undefined}
+              >
+                <Accordion.Control icon={<StatusIcon p={p} />}>
+                  <CategoryHeader label={label} p={p} />
+                </Accordion.Control>
+                <Accordion.Panel>
+                  <CategoryDetail p={p} />
+                </Accordion.Panel>
+              </Accordion.Item>
+            );
+          })}
+        </Accordion>
+      </Box>
     </Stack>
   );
 }

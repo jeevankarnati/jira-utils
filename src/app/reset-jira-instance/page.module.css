@@ -1,0 +1,34 @@
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: var(--mantine-spacing-lg);
+}
+
+.card {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.cardScroll {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+}
+
+/* From Mantine `md` up, pin the page to the viewport so only the cards scroll. */
+@media (min-width: 62em) {
+  .page {
+    height: calc(100dvh - 56px - (2 * var(--mantine-spacing-md)));
+    overflow: hidden;
+  }
+
+  .cols {
+    flex: 1;
+    min-height: 0;
+  }
+
+  .card {
+    height: 100%;
+  }
+}
