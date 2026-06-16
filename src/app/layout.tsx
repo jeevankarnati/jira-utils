@@ -1,8 +1,7 @@
 import type { Metadata } from "next";
-import { ColorSchemeScript, MantineProvider, mantineHtmlProps } from "@mantine/core";
 import { Geist, Geist_Mono } from "next/font/google";
 import { Shell } from "@/components/app-shell";
-import "@mantine/core/styles.css";
+import { Providers } from "./providers";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -29,15 +28,12 @@ export default function RootLayout({
     <html
       lang="en"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
-      {...mantineHtmlProps}
+      suppressHydrationWarning
     >
-      <head>
-        <ColorSchemeScript defaultColorScheme="auto" />
-      </head>
-      <body className="flex min-h-full flex-col">
-        <MantineProvider defaultColorScheme="auto">
+      <body className="flex min-h-full flex-col bg-background text-foreground">
+        <Providers>
           <Shell>{children}</Shell>
-        </MantineProvider>
+        </Providers>
       </body>
     </html>
   );

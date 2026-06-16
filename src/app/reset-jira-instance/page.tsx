@@ -3,33 +3,22 @@
 import {
   Accordion,
   Alert,
-  Badge,
-  Box,
   Button,
-  Card,
-  Center,
   Checkbox,
-  Flex,
-  Group,
-  List,
-  Loader,
+  CheckboxGroup,
+  Chip,
+  Input,
+  Label,
   Modal,
-  PasswordInput,
-  Progress,
-  ScrollArea,
-  SimpleGrid,
-  Stack,
-  Text,
-  TextInput,
-  ThemeIcon,
-  Title,
-} from "@mantine/core";
-import { useDisclosure } from "@mantine/hooks";
+  ProgressBar,
+  Spinner,
+  TextField,
+  Typography,
+} from "@heroui/react";
 import { IconCheck, IconClock, IconListCheck, IconX } from "@tabler/icons-react";
 import { useEffect, useRef, useState } from "react";
 import type { ResetEvent } from "@/lib/reset-events";
 import { RESET_CATEGORIES, type ResetCategoryKey } from "@/lib/reset-categories";
-import classes from "./page.module.css";
 
 type CategoryStatus = "queued" | "running" | "done";
 
@@ -61,7 +50,7 @@ export default function ResetJiraInstancePage() {
   const [progress, setProgress] = useState<ProgressMap | null>(null);
   const [openPanels, setOpenPanels] = useState<string[]>([]);
   const [error, setError] = useState<string | null>(null);
-  const [confirmOpened, confirm] = useDisclosure(false);
+  const [confirmOpen, setConfirmOpen] = useState(false);
 
   const canSubmit =
     email.trim() !== "" && baseUrl.trim() !== "" && apiToken.trim() !== "" && selected.length > 0;
@@ -124,7 +113,7 @@ export default function ResetJiraInstancePage() {
   };
 
   const runReset = async () => {
-    confirm.close();
+    setConfirmOpen(false);
     setLoading(true);
     setError(null);
     setOpenPanels([]);
@@ -178,96 +167,103 @@ export default function ResetJiraInstancePage() {
   const clearAll = () => setSelected([]);
 
   return (
-    <div className={classes.page}>
+    <div className="flex flex-col gap-6 md:h-[calc(100dvh-56px-2rem)] md:overflow-hidden">
       <div>
-        <Title order={2}>Reset Jira Instance</Title>
-        <Text size="sm" c="dimmed">
+        <Typography type="h2">Reset Jira Instance</Typography>
+        <Typography type="body-sm" color="muted">
           Enter your Jira credentials and choose what to delete. Nothing is stored - credentials are
           only used for this request.
-        </Text>
+        </Typography>
       </div>
 
-      <Flex className={classes.cols} direction={{ base: "column", md: "row" }} gap="lg">
-        <Box w={{ base: "100%", md: "40%" }} style={{ flexShrink: 0 }}>
-          <Card withBorder radius="md" padding="lg" className={classes.card}>
-            <Box className={classes.cardScroll}>
-              <Stack gap="md">
-                <TextInput
-                  label="Email"
-                  placeholder="you@example.com"
-                  value={email}
-                  onChange={(e) => setEmail(e.currentTarget.value)}
-                  required
-                />
-                <TextInput
-                  label="Instance URL"
-                  placeholder="https://your-domain.atlassian.net"
-                  value={baseUrl}
-                  onChange={(e) => setBaseUrl(e.currentTarget.value)}
-                  required
-                />
-                <PasswordInput
-                  label="API Token"
-                  placeholder="Your Jira API token"
-                  value={apiToken}
-                  onChange={(e) => setApiToken(e.currentTarget.value)}
-                  required
-                />
+      <div className="flex flex-col gap-6 md:min-h-0 md:flex-1 md:flex-row">
+        <div className="w-full shrink-0 md:w-2/5">
+          <div className="flex flex-col overflow-hidden rounded-xl border border-border md:h-full">
+            <div className="min-h-0 flex-1 overflow-y-auto p-5">
+              <div className="flex flex-col gap-4">
+                <TextField value={email} onChange={setEmail} isRequired>
+                  <Label>Email</Label>
+                  <Input type="email" placeholder="you@example.com" />
+                </TextField>
+                <TextField value={baseUrl} onChange={setBaseUrl} isRequired>
+                  <Label>Instance URL</Label>
+                  <Input type="url" placeholder="https://your-domain.atlassian.net" />
+                </TextField>
+                <TextField value={apiToken} onChange={setApiToken} isRequired>
+                  <Label>API Token</Label>
+                  <Input type="password" placeholder="Your Jira API token" />
+                </TextField>
 
-                <Checkbox.Group
-                  label={
-                    <Group justify="space-between" wrap="nowrap">
-                      <Text component="span" fw={500} size="sm">
-                        What to delete
-                      </Text>
-                      <Group gap={4}>
-                        <Button variant="subtle" size="compact-xs" onClick={selectAll}>
-                          All
-                        </Button>
-                        <Button
-                          variant="subtle"
-                          size="compact-xs"
-                          color="gray"
-                          onClick={clearAll}
-                          disabled={selected.length === 0}
-                        >
-                          Clear
-                        </Button>
-                      </Group>
-                    </Group>
-                  }
-                  value={selected}
-                  onChange={(value) => setSelected(value as ResetCategoryKey[])}
-                >
-                  <SimpleGrid cols={{ base: 1, xs: 2 }} spacing="xs" mt="xs">
-                    {RESET_CATEGORIES.map((category) => (
-                      <Checkbox key={category.key} value={category.key} label={category.label} />
-                    ))}
-                  </SimpleGrid>
-                </Checkbox.Group>
+                <div className="flex flex-col gap-2">
+                  <div className="flex items-center justify-between gap-2">
+                    <Typography type="body-sm" weight="medium">
+                      What to delete
+                    </Typography>
+                    <div className="flex gap-1">
+                      <Button variant="ghost" size="sm" onPress={selectAll}>
+                        All
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onPress={clearAll}
+                        isDisabled={selected.length === 0}
+                      >
+                        Clear
+                      </Button>
+                    </div>
+                  </div>
+                  <CheckboxGroup
+                    aria-label="What to delete"
+                    value={selected}
+                    onChange={(value) => setSelected(value as ResetCategoryKey[])}
+                  >
+                    <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+                      {RESET_CATEGORIES.map((category) => (
+                        <Checkbox key={category.key} value={category.key}>
+                          <Checkbox.Content>
+                            <Checkbox.Control>
+                              <Checkbox.Indicator />
+                            </Checkbox.Control>
+                            {category.label}
+                          </Checkbox.Content>
+                        </Checkbox>
+                      ))}
+                    </div>
+                  </CheckboxGroup>
+                </div>
 
                 <Button
-                  color="red"
+                  variant="danger"
                   fullWidth
-                  disabled={!canSubmit}
-                  loading={loading}
-                  onClick={confirm.open}
+                  isDisabled={!canSubmit}
+                  isPending={loading}
+                  onPress={() => setConfirmOpen(true)}
                 >
-                  {selected.length > 0 ? `Reset ${selected.length} selected` : "Reset selected"}
+                  {({ isPending }) => (
+                    <>
+                      {isPending ? <Spinner color="current" size="sm" /> : null}
+                      {selected.length > 0 ? `Reset ${selected.length} selected` : "Reset selected"}
+                    </>
+                  )}
                 </Button>
 
                 {error && (
-                  <Alert color="red" title="Error">
-                    {error}
+                  <Alert status="danger">
+                    <Alert.Indicator />
+                    <Alert.Content>
+                      <Alert.Title>Error</Alert.Title>
+                      <Alert.Description>{error}</Alert.Description>
+                    </Alert.Content>
                   </Alert>
                 )}
-              </Stack>
-            </Box>
-          </Card>
-        </Box>
+              </div>
+            </div>
+          </div>
+        </div>
 
-        <Box flex={1} miw={0}>
-          <Card withBorder radius="md" padding="lg" className={classes.card}>
+        <div className="min-w-0 flex-1">
+          <div className="flex flex-col overflow-hidden rounded-xl border border-border md:h-full">
             {progress ? (
               <ProgressPanel
                 ordered={orderedSelected}
@@ -279,52 +275,58 @@ export default function ResetJiraInstancePage() {
             ) : (
               <EmptyState />
             )}
-          </Card>
-        </Box>
-      </Flex>
+          </div>
+        </div>
+      </div>
 
-      <Modal opened={confirmOpened} onClose={confirm.close} title="Confirm deletion" centered>
-        <Stack gap="md">
-          <Text size="sm">
-            This will permanently delete the following from{" "}
-            <Text span fw={600}>
-              {baseUrl || "the instance"}
-            </Text>
-            . This cannot be undone.
-          </Text>
-          <List size="sm">
-            {selectedLabels.map((label) => (
-              <List.Item key={label}>{label}</List.Item>
-            ))}
-          </List>
-          <Group justify="flex-end">
-            <Button variant="default" onClick={confirm.close}>
-              Cancel
-            </Button>
-            <Button color="red" onClick={runReset}>
-              Delete permanently
-            </Button>
-          </Group>
-        </Stack>
-      </Modal>
+      <Modal.Backdrop isOpen={confirmOpen} onOpenChange={setConfirmOpen}>
+        <Modal.Container placement="center">
+          <Modal.Dialog className="sm:max-w-[420px]">
+            <Modal.CloseTrigger />
+            <Modal.Header>
+              <Modal.Heading>Confirm deletion</Modal.Heading>
+            </Modal.Header>
+            <Modal.Body>
+              <Typography type="body-sm">
+                This will permanently delete the following from{" "}
+                <span className="font-semibold text-foreground">{baseUrl || "the instance"}</span>.
+                This cannot be undone.
+              </Typography>
+              <ul className="mt-2 list-disc pl-5 text-sm">
+                {selectedLabels.map((label) => (
+                  <li key={label}>{label}</li>
+                ))}
+              </ul>
+            </Modal.Body>
+            <Modal.Footer>
+              <Button variant="secondary" slot="close">
+                Cancel
+              </Button>
+              <Button variant="danger" onPress={runReset}>
+                Delete permanently
+              </Button>
+            </Modal.Footer>
+          </Modal.Dialog>
+        </Modal.Container>
+      </Modal.Backdrop>
     </div>
   );
 }
 
 function EmptyState() {
   return (
-    <Center style={{ flex: 1 }} mih={280}>
-      <Stack align="center" gap="sm" maw={320} ta="center">
-        <ThemeIcon color="gray" variant="light" radius="xl" size={56}>
+    <div className="flex min-h-[280px] flex-1 items-center justify-center">
+      <div className="flex max-w-80 flex-col items-center gap-2 text-center">
+        <div className="flex size-14 items-center justify-center rounded-full bg-default text-muted">
           <IconListCheck size={28} />
-        </ThemeIcon>
-        <Text fw={600}>No reset running yet</Text>
-        <Text size="sm" c="dimmed">
+        </div>
+        <Typography weight="semibold">No reset running yet</Typography>
+        <Typography type="body-sm" color="muted">
           Select what to delete and start a reset. Live progress and per-item results will appear
           here.
-        </Text>
-      </Stack>
-    </Center>
+        </Typography>
+      </div>
+    </div>
   );
 }
 
@@ -364,72 +366,79 @@ function ProgressPanel({
   );
 
   return (
-    <Stack gap="sm" style={{ flex: 1, minHeight: 0 }}>
-      <Group justify="space-between">
-        <Text fw={600}>{running ? "Deleting…" : "Reset complete"}</Text>
-        <Group gap="xs">
-          <Text size="sm" c="dimmed">
+    <div className="flex min-h-0 flex-1 flex-col gap-2 p-5">
+      <div className="flex items-center justify-between gap-2">
+        <Typography weight="semibold">{running ? "Deleting…" : "Reset complete"}</Typography>
+        <div className="flex items-center gap-2">
+          <Typography type="body-sm" color="muted">
             {totals.doneCategories} / {ordered.length} categories
-          </Text>
-          <Badge color="green" variant="light">
+          </Typography>
+          <Chip color="success" variant="soft" size="sm">
             {totals.deleted} deleted
-          </Badge>
+          </Chip>
           {totals.failed > 0 && (
-            <Badge color="red" variant="light">
+            <Chip color="danger" variant="soft" size="sm">
               {totals.failed} failed
-            </Badge>
+            </Chip>
           )}
-        </Group>
-      </Group>
+        </div>
+      </div>
 
-      <Box className={classes.cardScroll}>
-        <Accordion multiple value={openPanels} onChange={onOpenChange} variant="separated">
+      <div className="min-h-0 flex-1 overflow-y-auto">
+        <Accordion
+          allowsMultipleExpanded
+          expandedKeys={openPanels}
+          onExpandedChange={(keys) => onOpenChange([...keys].map(String))}
+          variant="surface"
+        >
           {ordered.map(({ key, label }) => {
             const p = progress[key];
             if (!p) return null;
             return (
-              <Accordion.Item
-                key={key}
-                value={key}
-                ref={key === runningKey ? runningRef : undefined}
-              >
-                <Accordion.Control icon={<StatusIcon p={p} />}>
-                  <CategoryHeader label={label} p={p} />
-                </Accordion.Control>
+              <Accordion.Item key={key} id={key} ref={key === runningKey ? runningRef : undefined}>
+                <Accordion.Heading>
+                  <Accordion.Trigger className="flex w-full items-center gap-3">
+                    <StatusIcon p={p} />
+                    <CategoryHeader label={label} p={p} />
+                    <Accordion.Indicator />
+                  </Accordion.Trigger>
+                </Accordion.Heading>
                 <Accordion.Panel>
-                  <CategoryDetail p={p} />
+                  <Accordion.Body>
+                    <CategoryDetail p={p} />
+                  </Accordion.Body>
                 </Accordion.Panel>
               </Accordion.Item>
             );
           })}
         </Accordion>
-      </Box>
-    </Stack>
+      </div>
+    </div>
   );
 }
 
 function StatusIcon({ p }: { p: CategoryProgress }) {
   if (p.status === "queued") {
     return (
-      <ThemeIcon color="gray" variant="light" radius="xl" size="md">
+      <span className="flex size-7 shrink-0 items-center justify-center rounded-full bg-default text-muted">
         <IconClock size={16} />
-      </ThemeIcon>
+      </span>
     );
   }
   if (p.status === "running") {
-    return <Loader size="sm" />;
+    return <Spinner size="sm" />;
   }
   if (p.error || p.failed > 0) {
     return (
-      <ThemeIcon color="red" variant="light" radius="xl" size="md">
+      <span className="flex size-7 shrink-0 items-center justify-center rounded-full bg-danger-soft text-danger-soft-foreground">
         <IconX size={16} />
-      </ThemeIcon>
+      </span>
     );
   }
   return (
-    <ThemeIcon color="green" variant="light" radius="xl" size="md">
+    <span className="flex size-7 shrink-0 items-center justify-center rounded-full bg-success-soft text-success-soft-foreground">
       <IconCheck size={16} />
-    </ThemeIcon>
+    </span>
   );
 }
 
@@ -452,22 +461,27 @@ function CategoryHeader({ label, p }: { label: string; p: CategoryProgress }) {
             : "Done";
 
   return (
-    <Stack gap={4} style={{ flex: 1 }}>
-      <Group justify="space-between" wrap="nowrap">
-        <Text fw={500}>{label}</Text>
-        <Text size="xs" c="dimmed">
+    <div className="flex flex-1 flex-col gap-1">
+      <div className="flex items-center justify-between gap-2">
+        <Typography type="body-sm" weight="medium">
+          {label}
+        </Typography>
+        <Typography type="body-xs" color="muted">
           {statusLabel}
-        </Text>
-      </Group>
-      <Progress
+        </Typography>
+      </div>
+      <ProgressBar
+        aria-label={label}
+        className="w-full"
         value={percent}
         size="sm"
-        radius="xl"
-        striped={p.status === "running"}
-        animated={p.status === "running"}
-        color={p.error || p.failed > 0 ? "red" : "green"}
-      />
-    </Stack>
+        color={p.error || p.failed > 0 ? "danger" : "success"}
+      >
+        <ProgressBar.Track>
+          <ProgressBar.Fill />
+        </ProgressBar.Track>
+      </ProgressBar>
+    </div>
   );
 }
 
@@ -482,62 +496,58 @@ function CategoryDetail({ p }: { p: CategoryProgress }) {
 
   if (p.error) {
     return (
-      <Alert color="red" variant="light" title="Category failed">
-        {p.error}
+      <Alert status="danger">
+        <Alert.Indicator />
+        <Alert.Content>
+          <Alert.Title>Category failed</Alert.Title>
+          <Alert.Description>{p.error}</Alert.Description>
+        </Alert.Content>
       </Alert>
     );
   }
 
   if (p.status !== "queued" && p.total === 0) {
     return (
-      <Text size="sm" c="dimmed">
+      <Typography type="body-sm" color="muted">
         Nothing to delete.
-      </Text>
+      </Typography>
     );
   }
 
   if (p.items.length === 0) {
     return (
-      <Text size="sm" c="dimmed">
+      <Typography type="body-sm" color="muted">
         {p.status === "queued" ? "Waiting to start…" : "Finding items…"}
-      </Text>
+      </Typography>
     );
   }
 
   return (
-    <ScrollArea.Autosize viewportRef={viewportRef} mah={260} type="auto">
-      <Stack gap={6}>
+    <div ref={viewportRef} className="max-h-[260px] scrollbar overflow-y-auto">
+      <div className="flex flex-col gap-1.5">
         {p.items.map((item, index) => (
-          <Group key={`${item.id}-${index}`} gap="xs" wrap="nowrap" align="flex-start">
+          <div key={`${item.id}-${index}`} className="flex items-start gap-2">
             {item.status === "deleted" ? (
-              <IconCheck
-                size={16}
-                color="var(--mantine-color-green-6)"
-                style={{ flexShrink: 0, marginTop: 2 }}
-              />
+              <IconCheck size={16} className="mt-0.5 shrink-0 text-success" />
             ) : (
-              <IconX
-                size={16}
-                color="var(--mantine-color-red-6)"
-                style={{ flexShrink: 0, marginTop: 2 }}
-              />
+              <IconX size={16} className="mt-0.5 shrink-0 text-danger" />
             )}
-            <Stack gap={0} style={{ minWidth: 0 }}>
-              <Text size="sm" truncate>
+            <div className="flex min-w-0 flex-col">
+              <Typography type="body-sm" truncate>
                 {item.name}
-              </Text>
-              <Text size="xs" c="dimmed" ff="monospace">
+              </Typography>
+              <Typography type="body-xs" color="muted" className="font-mono">
                 {item.id}
-              </Text>
+              </Typography>
               {item.status === "failed" && item.error && (
-                <Text size="xs" c="red">
+                <Typography type="body-xs" className="text-danger">
                   {item.error}
-                </Text>
+                </Typography>
               )}
-            </Stack>
-          </Group>
+            </div>
+          </div>
         ))}
-      </Stack>
-    </ScrollArea.Autosize>
+      </div>
+    </div>
   );
 }

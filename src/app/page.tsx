@@ -1,25 +1,25 @@
-import { Button, Card, Group, Stack, Text, Title } from "@mantine/core";
+import { Button, Card } from "@heroui/react";
 import Link from "next/link";
 
 export default function Home() {
   return (
-    <Stack gap="lg">
-      <Group>
-        <Card withBorder radius="md" padding="lg" w={320}>
-          <Stack gap="sm">
-            <Title order={4}>Reset Jira Instance</Title>
-            <Text size="sm" c="dimmed">
+    <div className="flex flex-col gap-6">
+      <div className="flex flex-wrap gap-4">
+        <Card className="w-80" variant="default">
+          <Card.Header>
+            <Card.Title>Reset Jira Instance</Card.Title>
+            <Card.Description>
               Delete projects, workflows, screens and other configuration from a Jira Cloud
               instance.
-            </Text>
-            <Link href="/reset-jira-instance" style={{ textDecoration: "none" }}>
-              <Button mt="sm" fullWidth>
-                Open
-              </Button>
+            </Card.Description>
+          </Card.Header>
+          <Card.Content>
+            <Link href="/reset-jira-instance" className="mt-2 block no-underline">
+              <Button fullWidth>Open</Button>
             </Link>
-          </Stack>
+          </Card.Content>
         </Card>
-      </Group>
-    </Stack>
+      </div>
+    </div>
   );
 }
