@@ -1,8 +1,9 @@
 import type { DefaultJiraClientType } from "@narthia/jira-client";
-import type { ResetResult } from "./types";
+import type { ProgressReporter, ResetResult } from "./types";
 
 export const resetFieldConfigurationSchemes = async (
-  jiraClient: DefaultJiraClientType
+  jiraClient: DefaultJiraClientType,
+  progress: ProgressReporter
 ): Promise<ResetResult> => {
   const maxResults = 50;
 
@@ -39,18 +40,29 @@ export const resetFieldConfigurationSchemes = async (
     }
   }
 
+  progress.discovered(allFieldConfigurationSchemes.length);
+
   let deleted = 0;
   let failed = 0;
 
   for (const fieldConfigurationScheme of allFieldConfigurationSchemes) {
+    const id = String(fieldConfigurationScheme.id!);
+    const name = fieldConfigurationScheme.name ?? id;
     const deleteFieldConfigurationScheme =
       await jiraClient.issueFieldConfigurations.deleteFieldConfigurationScheme({
         id: parseInt(fieldConfigurationScheme.id!, 10),
       });
     if (deleteFieldConfigurationScheme.success) {
       deleted++;
+      progress.item({ id, name, status: "deleted" });
     } else {
       failed++;
+      progress.item({
+        id,
+        name,
+        status: "failed",
+        error: JSON.stringify(deleteFieldConfigurationScheme.error),
+      });
     }
   }
 
