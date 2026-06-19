@@ -1,5 +1,6 @@
 import { JiraClient } from "@narthia/jira-client";
 import type { ResetEvent } from "@/lib/reset-events";
+import { isBlockedInstanceUrl } from "@/lib/is-blocked-instance-url";
 import { RESET_CATEGORIES, type ResetCategoryKey } from "@/lib/reset-categories";
 import { RESET_FUNCTIONS } from "@/server/jira";
 
@@ -26,6 +27,13 @@ export async function POST(req: Request) {
 
   if (!Array.isArray(categories) || categories.length === 0) {
     return Response.json({ error: "At least one category must be selected" }, { status: 400 });
+  }
+
+  if (isBlockedInstanceUrl(baseUrl)) {
+    return Response.json(
+      { error: 'Resetting instances with "trundl" in the URL is not allowed.' },
+      { status: 403 }
+    );
   }
 
   const selected = new Set(categories);

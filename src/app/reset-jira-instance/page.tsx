@@ -18,6 +18,7 @@ import {
 import { IconCheck, IconClock, IconListCheck, IconX } from "@tabler/icons-react";
 import { useEffect, useRef, useState } from "react";
 import type { ResetEvent } from "@/lib/reset-events";
+import { isBlockedInstanceUrl } from "@/lib/is-blocked-instance-url";
 import { RESET_CATEGORIES, type ResetCategoryKey } from "@/lib/reset-categories";
 
 type CategoryStatus = "queued" | "running" | "done";
@@ -51,6 +52,7 @@ export default function ResetJiraInstancePage() {
   const [openPanels, setOpenPanels] = useState<string[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [confirmOpen, setConfirmOpen] = useState(false);
+  const [blockedOpen, setBlockedOpen] = useState(false);
 
   const canSubmit =
     email.trim() !== "" && baseUrl.trim() !== "" && apiToken.trim() !== "" && selected.length > 0;
@@ -175,6 +177,14 @@ export default function ResetJiraInstancePage() {
     setError(null);
   };
 
+  const handleResetPress = () => {
+    if (isBlockedInstanceUrl(baseUrl)) {
+      setBlockedOpen(true);
+      return;
+    }
+    setConfirmOpen(true);
+  };
+
   return (
     <div className="flex flex-col gap-6 md:h-[calc(100dvh-56px-2rem)] md:overflow-hidden">
       <div>
@@ -247,7 +257,7 @@ export default function ResetJiraInstancePage() {
                   fullWidth
                   isDisabled={!canSubmit}
                   isPending={loading}
-                  onPress={() => setConfirmOpen(true)}
+                  onPress={handleResetPress}
                 >
                   {({ isPending }) => (
                     <>
@@ -288,6 +298,27 @@ export default function ResetJiraInstancePage() {
           </div>
         </div>
       </div>
+
+      <Modal.Backdrop isOpen={blockedOpen} onOpenChange={setBlockedOpen}>
+        <Modal.Container placement="center">
+          <Modal.Dialog className="sm:max-w-[420px]">
+            <Modal.CloseTrigger />
+            <Modal.Header>
+              <Modal.Heading>Reset not allowed</Modal.Heading>
+            </Modal.Header>
+            <Modal.Body>
+              <Typography type="body-sm">
+                Resetting Jira instances with &quot;trundl&quot; in the URL is not allowed.
+              </Typography>
+            </Modal.Body>
+            <Modal.Footer>
+              <Button variant="secondary" slot="close">
+                OK
+              </Button>
+            </Modal.Footer>
+          </Modal.Dialog>
+        </Modal.Container>
+      </Modal.Backdrop>
 
       <Modal.Backdrop isOpen={confirmOpen} onOpenChange={setConfirmOpen}>
         <Modal.Container placement="center">
